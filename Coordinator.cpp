@@ -1,13 +1,28 @@
 #include <iostream>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <string.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <fstream>
-#include <string>
-#include <typeinfo>
+#include <sstream>
+#include <sys/wait.h>
+#include <csignal>
+#include <bits/stdc++.h>
 
 using namespace std;
+const char *mylist[10];
+
 
 int main(int argc, char* argv[]){
+    int shmid;
     string arg = "";
     string argNext = "";
+    int count = 5;
     //Parsing command line inputs
     for(int i  = 1; i < argc; i++){
         arg = argv[i];
@@ -29,16 +44,71 @@ int main(int argc, char* argv[]){
         }
     }
 
-    //Open file and read in inputs.
+
+    //Create shared memory
+    int sizeMem = 1024;
+    key_t key = 8008;
+
+    //Get SHMID, check for errors
+    shmid = shmget(key, count*sizeof(string), 0644|IPC_CREAT);
+    if (shmid == -1) {
+        perror("Shared memory");
+        return 1;
+    }
+
+    //Check file length and open the files
     string input;
     int fileLength = 0;
     string fileName = argv[argc-1];
     fstream file;
+    int incr = 0;
+    int temp;
     file.open(fileName.c_str());
-    while(getline(file, input)){
+    while(getline(file,input)){
         fileLength++;
-        cout << input << endl;
+    }
+    
+    file.clear();
+    file.seekg(0,ios::beg);
+
+    //Create a new array of strings, so that I can use c_str later
+    string *allInputs;
+    allInputs = new string[fileLength];
+    for(int i = 0; i < fileLength; i++){
+        getline(file,input);
+        allInputs[i] = input;
     }
 
     
+
+
+
+    //Attach 
+    for(int i = 0 ; i < fileLength; i++){
+    mylist[i] = (char*)shmat(shmid,NULL,0);
+        if(mylist == (void *) -1){
+            perror("Shared memory attach");
+         return 1;
+        }
+    }
+
+    file.clear();
+    file.seekg(0,ios::beg);
+    //Parse input
+    
+
+    //Take inputs and add the c_str version to the array of characters.
+    for(int i = 0 ; i < fileLength; i++){
+        mylist[i] = allInputs[i].c_str();
+    }
+
+    for(int i = 0; i < fileLength; i++){
+        cout << mylist[i] <<endl;
+    }
+
+   
+
+
+
+
 }

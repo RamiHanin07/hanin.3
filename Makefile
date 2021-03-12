@@ -8,4 +8,4 @@ palin : palin.cpp
 	$(CC) $(CFLAGS) palin palin.cpp
 	
 clean:
-	rm main.o bin_adder.o
+	rm Coordinator.o palin.o
