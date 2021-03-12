@@ -1,5 +1,7 @@
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <typeinfo>
 
 using namespace std;
 
@@ -26,4 +28,17 @@ int main(int argc, char* argv[]){
             cout << "-m " << argNext << endl;
         }
     }
+
+    //Open file and read in inputs.
+    string input;
+    int fileLength = 0;
+    string fileName = argv[argc-1];
+    fstream file;
+    file.open(fileName.c_str());
+    while(getline(file, input)){
+        fileLength++;
+        cout << input << endl;
+    }
+
+    
 }
