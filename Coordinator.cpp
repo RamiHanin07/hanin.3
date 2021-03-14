@@ -13,10 +13,16 @@
 #include <sys/wait.h>
 #include <csignal>
 #include <bits/stdc++.h>
+#include <sys/msg.h>
 
 using namespace std;
 
 char *mylist;
+
+struct mesg_buffer{
+    long mesg_type;
+    char mesg_text[100];
+} message;
 
 int main(int argc, char* argv[]){
     int shmid;
@@ -102,7 +108,21 @@ int main(int argc, char* argv[]){
     cout << "Forking Child" <<endl;
     if(fork() == 0)
         execvp ("./palin", argv);
+
+
+    //Receive message queue
+    key_t messageKey = ftok("pog", 65);
+    int msgid;
+
+    msgid = msgget(messageKey, 0666|IPC_CREAT);
+
+    msgrcv(msgid, &message, sizeof(message), 1, 0);
+    printf("Data Received is : %s \n", message.mesg_text);
+
+    msgctl(msgid, IPC_RMID, NULL);
     wait(NULL);
+
+
 
 
     shmdt((void *) mylist);

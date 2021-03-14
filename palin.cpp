@@ -13,10 +13,16 @@
 #include <sys/wait.h>
 #include <csignal>
 #include <bits/stdc++.h>
+#include <sys/msg.h>
 
 using namespace std;
 
 char *mylist;
+
+struct mesg_buffer {
+    long mesg_type;
+    char mesg_text[100];
+}message;
 
 int main(int argc, char* argv[]){
     int shmid;
@@ -55,6 +61,24 @@ int main(int argc, char* argv[]){
         cout << endl;
     }
 
+
+    //Create Message Queue
+    int msgid;
+    key_t messageKey;
+    int MAX = 10;
+
+    messageKey = ftok("pog", 65);
+
+    msgid = msgget(messageKey, 0666 | IPC_CREAT);
+    message.mesg_type =1;
+
+    printf("Write Data: ");
+    fgets(message.mesg_text, MAX, stdin);
+
+
+    msgsnd(msgid, &message, sizeof(message), 0);
+
+    printf("Data send is : %s \n", message.mesg_text);
 
     
     shmdt((void *) mylist);
