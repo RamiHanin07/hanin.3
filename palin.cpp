@@ -33,6 +33,16 @@ int main(int argc, char* argv[]){
     string input;
     int fileLength = 0;
     ifstream file("input.txt");
+    string arg = "";
+    int index;
+
+    //Parse args from parent;
+    for (int i = 0; i < argc; i++){
+        arg = argv[i];
+        stringstream degree(arg);
+        degree >> index;
+    }
+
     
     while(getline(file, input)){
         fileLength++;
@@ -53,13 +63,37 @@ int main(int argc, char* argv[]){
         return 1;
         }
 
-    //Output
-    for(int col = 0; col < fileLength; col++){
-        for(int row = 0; row < 20; row++){
-            cout << mylist[20*col+row];
-        }
-        cout << endl;
+    //Output all in memory
+    //for(int col = 0; col < fileLength; col++){
+        //for(int row = 0; row < 20; row++){
+            //cout << mylist[20*col+row];
+        //}
+        //cout << endl;
+    //}
+    char word[20];
+    //Output Specific Index of Palindrome Given
+    for(int row = 0; row < 20; row++){
+        word[row] = mylist[20*index+row];
+        //cout << mylist[20*index+row];
+        cout << word[row];
     }
+
+    cout << endl;
+    //string stringWord = word;
+    string stringWord(word);
+    string reversed = string(stringWord.rbegin(), stringWord.rend());
+    cout << reversed << " ; reversed" <<endl;
+
+
+    //Finish Palindrome
+    int palindrome = 0;
+    if(stringWord == reversed){
+        palindrome = 1;
+    }
+
+    cout << palindrome <<endl;
+
+    
 
 
     //Create Message Queue
@@ -71,9 +105,6 @@ int main(int argc, char* argv[]){
 
     msgid = msgget(messageKey, 0666 | IPC_CREAT);
     message.mesg_type =1;
-
-    printf("Write Data: ");
-    //fgets(message.mesg_text, MAX, stdin);
 
     strcpy(message.mesg_text, "Palindrome");
 

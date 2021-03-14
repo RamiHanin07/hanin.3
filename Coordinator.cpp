@@ -3,7 +3,6 @@
 #include <sys/shm.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -14,6 +13,7 @@
 #include <csignal>
 #include <bits/stdc++.h>
 #include <sys/msg.h>
+#include <string>
 
 using namespace std;
 
@@ -98,17 +98,23 @@ int main(int argc, char* argv[]){
     }
 
     //Testing output for 1D array as 2D Array
-    for(int col = 0; col < fileLength; col++){
-        for(int row = 0; row < 20; row++){
-            cout << mylist[20*col+row];
-        }
-        cout << endl;
+    //for(int col = 0; col < fileLength; col++){
+        //for(int row = 0; row < 20; row++){
+            //cout << mylist[20*col+row];
+        //}
+        //cout << endl;
+    //}
+
+    char buffer[50];
+    
+    for(int i = 0; i < fileLength; i++){
+        cout << "Forking Child" <<endl;
+        sprintf(buffer, "%d", i);
+        if(fork() == 0)
+            execl("./palin", buffer);
     }
 
-    cout << "Forking Child" <<endl;
-    if(fork() == 0)
-        execvp ("./palin", argv);
-
+    
 
     //Receive message queue
     key_t messageKey = ftok("pog", 65);
