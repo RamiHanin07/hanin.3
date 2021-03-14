@@ -19,6 +19,7 @@
 using namespace std;
 
 char *mylist;
+int shmid;
 
 struct mesg_buffer{
     long mesg_type;
@@ -28,11 +29,28 @@ struct mesg_buffer{
     char mesg_string[100];
 } message;
 
+void signalHandler(int signal);
+
+void signalHandler(int signal){
+
+    //Basic signal handler
+    if(signal == 2)
+        cout << "Interrupt Signal Received" <<endl;
+    else if(signal == 14)
+        cout << "Exceeded Time, Terminating Program" <<endl;
+    shmdt((void *) mylist);
+    exit(signal);
+}
+
+
 int main(int argc, char* argv[]){
-    int shmid;
     string arg = "";
+    int t = time(NULL);
     string argNext = "";
     int count = 5;
+    signal(SIGINT, signalHandler);
+    signal(SIGALRM, signalHandler);
+    alarm(25);
     //Parsing command line inputs
     for(int i  = 1; i < argc; i++){
         arg = argv[i];
