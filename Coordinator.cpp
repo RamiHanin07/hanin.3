@@ -23,6 +23,7 @@ char *mylist;
 struct mesg_buffer{
     long mesg_type;
     char mesg_text[100];
+    int mesg_index;
 } message;
 
 int main(int argc, char* argv[]){
@@ -98,35 +99,37 @@ int main(int argc, char* argv[]){
         }
     }
 
-    //Testing output for 1D array as 2D Array
-    //for(int col = 0; col < fileLength; col++){
-        //for(int row = 0; row < 20; row++){
-            //cout << mylist[20*col+row];
-        //}
-        //cout << endl;
-    //}
 
     char buffer[50];
-    
+    pid_t child_pid, wpid;
+    int status = 0;
     for(int i = 0; i < fileLength; i++){
-        //cout << "Forking Child" <<endl;
         sprintf(buffer, "%d", i);
-        if(fork() == 0)
+        if(child_pid = fork() == 0)
             execl("./palin", buffer);
     }
 
     
 
-    wait(NULL);
+    
     //Receive message queue
-    key_t messageKey = ftok("pog", 65);
+    key_t messageKey = ftok("poggies", 65);
     int msgid;
 
     msgid = msgget(messageKey, 0666|IPC_CREAT);
 
+    while((wpid = wait(&status)) > 0){
     msgrcv(msgid, &message, sizeof(message), 1, 0);
-    printf("Data Received is : %s \n", message.mesg_text);
+    if(strcmp(message.mesg_text, "Palindrome") == 0)
+        cout << "Palindrome received; Index: " << message.mesg_index << endl;
+    else if(strcmp(message.mesg_text, "Not Palindrome") == 0)
+        cout << "Not Palindrome; Index: " << message.mesg_index << endl;
+    else
+        cout << "unable to discern message" <<endl;
 
+    //printf("Data Received is : %s \n", message.mesg_text);
+
+    }
     msgctl(msgid, IPC_RMID, NULL);
     
 
@@ -134,7 +137,7 @@ int main(int argc, char* argv[]){
 
 
     shmdt((void *) mylist);
-    //cout << "Complete" <<endl;
+    cout << "Complete" <<endl;
 
    
 

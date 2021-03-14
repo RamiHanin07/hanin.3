@@ -23,6 +23,7 @@ char *mylist;
 struct mesg_buffer {
     long mesg_type;
     char mesg_text[100];
+    int mesg_index;
 }message;
 
 int main(int argc, char* argv[]){
@@ -69,23 +70,16 @@ int main(int argc, char* argv[]){
         return 1;
         }
 
-    //Output all in memory
-    //for(int col = 0; col < fileLength; col++){
-        //for(int row = 0; row < 20; row++){
-            //cout << mylist[20*col+row];
-        //}
-        //cout << endl;
-    //}
     char word[20];
     //Output Specific Index of Palindrome Given
     int len = strlen(mylist);
     for(int row = 0; row < 20; row++){
         word[row] = mylist[20*index+row];
         //cout << mylist[20*index+row];
-        cout << word[row];
+        //cout << word[row];
     }
 
-    cout << endl;
+    //cout << endl;
     
 
     int l = 0;
@@ -100,7 +94,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    cout << palindrome <<endl;
+    //cout << palindrome <<endl;
 
     
 
@@ -110,10 +104,11 @@ int main(int argc, char* argv[]){
     key_t messageKey;
     int MAX = 10;
 
-    messageKey = ftok("pog", 65);
+    messageKey = ftok("poggies", 65);
 
     msgid = msgget(messageKey, 0666 | IPC_CREAT);
-    message.mesg_type =1;
+    message.mesg_type = 1;
+    message.mesg_index = index;
 
     if(palindrome == 1)
         strcpy(message.mesg_text, "Palindrome");
@@ -122,10 +117,9 @@ int main(int argc, char* argv[]){
     else 
         return 0;
 
-
     msgsnd(msgid, &message, sizeof(message), 0);
 
-    printf("Data send is : %s \n", message.mesg_text);
+    //printf("Data send is : %s \n", message.mesg_text);
 
     
     shmdt((void *) mylist);
