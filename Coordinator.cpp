@@ -15,8 +15,8 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-const char *mylist[10];
 
+char *mylist;
 
 int main(int argc, char* argv[]){
     int shmid;
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
 
     //Create shared memory
     int sizeMem = 1024;
-    key_t key = 8008;
+    key_t key = 800813;
 
     //Get SHMID, check for errors
     shmid = shmget(key, count*sizeof(string), 0644|IPC_CREAT);
@@ -71,25 +71,11 @@ int main(int argc, char* argv[]){
     file.clear();
     file.seekg(0,ios::beg);
 
-    //Create a new array of strings, so that I can use c_str later
-    string *allInputs;
-    allInputs = new string[fileLength];
-    for(int i = 0; i < fileLength; i++){
-        getline(file,input);
-        allInputs[i] = input;
-    }
-
     
-
-
-
-    //Attach 
-    for(int i = 0 ; i < fileLength; i++){
-    mylist[i] = (char*)shmat(shmid,NULL,0);
-        if(mylist == (void *) -1){
-            perror("Shared memory attach");
-         return 1;
-        }
+    mylist = (char*)shmat(shmid,NULL,0);
+    if(mylist == (void *) -1){
+        perror("Shared memory attach");
+        return 1;
     }
 
     file.clear();
@@ -97,14 +83,30 @@ int main(int argc, char* argv[]){
     //Parse input
     
 
-    //Take inputs and add the c_str version to the array of characters.
-    for(int i = 0 ; i < fileLength; i++){
-        mylist[i] = allInputs[i].c_str();
+    //Using 1D array as a 2D array
+    for(int col = 0; col < fileLength; col++){
+        getline(file,input);
+        for(int row = 0; row < input.length(); row++){
+            mylist[20*col+row] = input[row];
+        }
     }
 
-    for(int i = 0; i < fileLength; i++){
-        cout << mylist[i] <<endl;
+    //Testing output for 1D array as 2D Array
+    for(int col = 0; col < fileLength; col++){
+        for(int row = 0; row < 20; row++){
+            cout << mylist[20*col+row];
+        }
+        cout << endl;
     }
+
+    cout << "Forking Child" <<endl;
+    if(fork() == 0)
+        execvp ("./palin", argv);
+    wait(NULL);
+
+
+    shmdt((void *) mylist);
+    cout << "Complete" <<endl;
 
    
 
