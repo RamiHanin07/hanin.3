@@ -73,7 +73,9 @@ int main(int argc, char* argv[]){
     message.mesg_type =1;
 
     printf("Write Data: ");
-    fgets(message.mesg_text, MAX, stdin);
+    //fgets(message.mesg_text, MAX, stdin);
+
+    strcpy(message.mesg_text, "Palindrome");
 
 
     msgsnd(msgid, &message, sizeof(message), 0);
