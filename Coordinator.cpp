@@ -24,6 +24,8 @@ struct mesg_buffer{
     long mesg_type;
     char mesg_text[100];
     int mesg_index;
+    int mesg_pid;
+    char mesg_string[100];
 } message;
 
 int main(int argc, char* argv[]){
@@ -118,12 +120,26 @@ int main(int argc, char* argv[]){
 
     msgid = msgget(messageKey, 0666|IPC_CREAT);
 
+    ofstream palin("palin.out");
+    ofstream noPalin("nopalin.out");
+
     while((wpid = wait(&status)) > 0){
     msgrcv(msgid, &message, sizeof(message), 1, 0);
-    if(strcmp(message.mesg_text, "Palindrome") == 0)
-        cout << "Palindrome received; Index: " << message.mesg_index << endl;
-    else if(strcmp(message.mesg_text, "Not Palindrome") == 0)
-        cout << "Not Palindrome; Index: " << message.mesg_index << endl;
+    if(strcmp(message.mesg_text, "Palindrome") == 0){
+        cout << "Palindrome received;" << endl;
+        cout << "Index: " << message.mesg_index << endl;
+        cout << "Process ID: " << message.mesg_pid <<endl;
+        cout << "String: " << message.mesg_string <<endl;
+        palin << message.mesg_pid << "  " << message.mesg_index << "    " << message.mesg_string;
+
+    }
+    else if(strcmp(message.mesg_text, "Not Palindrome") == 0){
+        cout << "Not Palindrome" << endl;
+        cout << "Index: " << message.mesg_index << endl;
+        cout << "Process ID: " << message.mesg_pid <<endl;
+        cout << "String: " << message.mesg_string <<endl;
+        noPalin << message.mesg_pid << "  " << message.mesg_index << "    " << message.mesg_string;
+    }
     else
         cout << "unable to discern message" <<endl;
 

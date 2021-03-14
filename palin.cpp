@@ -24,6 +24,8 @@ struct mesg_buffer {
     long mesg_type;
     char mesg_text[100];
     int mesg_index;
+    int mesg_pid;
+    char mesg_string[100];
 }message;
 
 int main(int argc, char* argv[]){
@@ -109,6 +111,8 @@ int main(int argc, char* argv[]){
     msgid = msgget(messageKey, 0666 | IPC_CREAT);
     message.mesg_type = 1;
     message.mesg_index = index;
+    message.mesg_pid = getpid();
+    strcpy(message.mesg_string, word);
 
     if(palindrome == 1)
         strcpy(message.mesg_text, "Palindrome");
