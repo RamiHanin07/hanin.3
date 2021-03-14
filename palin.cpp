@@ -14,6 +14,7 @@
 #include <csignal>
 #include <bits/stdc++.h>
 #include <sys/msg.h>
+#include <ctime>
 
 using namespace std;
 
@@ -29,6 +30,11 @@ int main(int argc, char* argv[]){
     int count = 5;
     int sizeMem = 1024;
     key_t key = 800813;
+    double RANDMAX = 30000.0;
+    double RANDMIN = 00000.0;
+    srand(time(0) ^ getpid());
+    double sleepTime = (rand()%3000)/1000.0;
+    sleep(sleepTime);
     
     string input;
     int fileLength = 0;
@@ -72,6 +78,7 @@ int main(int argc, char* argv[]){
     //}
     char word[20];
     //Output Specific Index of Palindrome Given
+    int len = strlen(mylist);
     for(int row = 0; row < 20; row++){
         word[row] = mylist[20*index+row];
         //cout << mylist[20*index+row];
@@ -79,16 +86,18 @@ int main(int argc, char* argv[]){
     }
 
     cout << endl;
-    //string stringWord = word;
-    string stringWord(word);
-    string reversed = string(stringWord.rbegin(), stringWord.rend());
-    cout << reversed << " ; reversed" <<endl;
+    
+
+    int l = 0;
+    int h = strlen(word)-2;
 
 
-    //Finish Palindrome
-    int palindrome = 0;
-    if(stringWord == reversed){
-        palindrome = 1;
+    int palindrome = 1;
+    while(h > l){
+        if(word[l++] != word[h--]){
+            palindrome = 0;
+            h = l;
+        }
     }
 
     cout << palindrome <<endl;
@@ -106,7 +115,12 @@ int main(int argc, char* argv[]){
     msgid = msgget(messageKey, 0666 | IPC_CREAT);
     message.mesg_type =1;
 
-    strcpy(message.mesg_text, "Palindrome");
+    if(palindrome == 1)
+        strcpy(message.mesg_text, "Palindrome");
+    else if(palindrome == 0)
+        strcpy(message.mesg_text, "Not Palindrome");
+    else 
+        return 0;
 
 
     msgsnd(msgid, &message, sizeof(message), 0);
@@ -116,7 +130,7 @@ int main(int argc, char* argv[]){
     
     shmdt((void *) mylist);
 
-    cout << "Ending child process" <<endl;
+    //cout << "Ending child process" <<endl;
     return 0;
 
 

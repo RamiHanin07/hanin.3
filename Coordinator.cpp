@@ -14,6 +14,7 @@
 #include <bits/stdc++.h>
 #include <sys/msg.h>
 #include <string>
+#include <ctime>
 
 using namespace std;
 
@@ -108,7 +109,7 @@ int main(int argc, char* argv[]){
     char buffer[50];
     
     for(int i = 0; i < fileLength; i++){
-        cout << "Forking Child" <<endl;
+        //cout << "Forking Child" <<endl;
         sprintf(buffer, "%d", i);
         if(fork() == 0)
             execl("./palin", buffer);
@@ -116,6 +117,7 @@ int main(int argc, char* argv[]){
 
     
 
+    wait(NULL);
     //Receive message queue
     key_t messageKey = ftok("pog", 65);
     int msgid;
@@ -126,13 +128,13 @@ int main(int argc, char* argv[]){
     printf("Data Received is : %s \n", message.mesg_text);
 
     msgctl(msgid, IPC_RMID, NULL);
-    wait(NULL);
+    
 
 
 
 
     shmdt((void *) mylist);
-    cout << "Complete" <<endl;
+    //cout << "Complete" <<endl;
 
    
 
