@@ -44,13 +44,19 @@ void signalHandler(int signal){
 
 
 int main(int argc, char* argv[]){
+
+    //Opening Variables
     string arg = "";
     int t = time(NULL);
     string argNext = "";
     int count = 5;
+    int maxProcesses;
+    int maxAllowed;
     signal(SIGINT, signalHandler);
     signal(SIGALRM, signalHandler);
     alarm(25);
+
+
     //Parsing command line inputs
     for(int i  = 1; i < argc; i++){
         arg = argv[i];
@@ -66,9 +72,17 @@ int main(int argc, char* argv[]){
         } else if(arg == "-c"){
             argNext = argv[i+1];
             cout << "-c " << argNext << endl;
+            stringstream c(argNext);
+            c >> maxProcesses;
         } else if(arg == "-m"){
             argNext = argv[i+1];
             cout << "-m " << argNext << endl;
+            stringstream m(argNext);
+            m >> maxAllowed;
+            if(maxAllowed > 20){
+                cout << "Error: -m can only accept up to 20 max number of children allowed" <<endl;
+                return 0;
+            }
         }
     }
 
@@ -99,7 +113,7 @@ int main(int argc, char* argv[]){
     file.clear();
     file.seekg(0,ios::beg);
 
-    
+    //Attach shared memory to char array
     mylist = (char*)shmat(shmid,NULL,0);
     if(mylist == (void *) -1){
         perror("Shared memory attach");
@@ -120,6 +134,7 @@ int main(int argc, char* argv[]){
     }
 
 
+    //Fork Execute Loop up to fileLength
     char buffer[50];
     pid_t child_pid, wpid;
     int status = 0;
@@ -141,6 +156,8 @@ int main(int argc, char* argv[]){
     ofstream palin("palin.out");
     ofstream noPalin("nopalin.out");
 
+    //Check if message from child is Palindrome or Not Palindrome
+    //Then output to files
     while((wpid = wait(&status)) > 0){
     msgrcv(msgid, &message, sizeof(message), 1, 0);
     if(strcmp(message.mesg_text, "Palindrome") == 0){
@@ -149,6 +166,7 @@ int main(int argc, char* argv[]){
         cout << "Process ID: " << message.mesg_pid <<endl;
         cout << "String: " << message.mesg_string <<endl;
         palin << message.mesg_pid << "  " << message.mesg_index << "    " << message.mesg_string;
+        cout <<  endl;
 
     }
     else if(strcmp(message.mesg_text, "Not Palindrome") == 0){
@@ -157,6 +175,7 @@ int main(int argc, char* argv[]){
         cout << "Process ID: " << message.mesg_pid <<endl;
         cout << "String: " << message.mesg_string <<endl;
         noPalin << message.mesg_pid << "  " << message.mesg_index << "    " << message.mesg_string;
+        cout <<  endl;
     }
     else
         cout << "unable to discern message" <<endl;
@@ -164,12 +183,11 @@ int main(int argc, char* argv[]){
     //printf("Data Received is : %s \n", message.mesg_text);
 
     }
+
+
+
+    //Close Message queue, void array, exit.
     msgctl(msgid, IPC_RMID, NULL);
-    
-
-
-
-
     shmdt((void *) mylist);
     cout << "Complete" <<endl;
 

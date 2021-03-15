@@ -29,6 +29,8 @@ struct mesg_buffer {
 }message;
 
 int main(int argc, char* argv[]){
+
+    //Basic Variables
     int shmid;
     int count = 5;
     int sizeMem = 1024;
@@ -38,7 +40,6 @@ int main(int argc, char* argv[]){
     srand(time(0) ^ getpid());
     double sleepTime = (rand()%3000)/1000.0;
     sleep(sleepTime);
-    
     string input;
     int fileLength = 0;
     ifstream file("input.txt");
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]){
         degree >> index;
     }
 
-    
+    //Get filelength
     while(getline(file, input)){
         fileLength++;
     }
@@ -77,17 +78,12 @@ int main(int argc, char* argv[]){
     int len = strlen(mylist);
     for(int row = 0; row < 20; row++){
         word[row] = mylist[20*index+row];
-        //cout << mylist[20*index+row];
-        //cout << word[row];
     }
 
-    //cout << endl;
     
-
+    //Basic Palindrome Check Functionality
     int l = 0;
     int h = strlen(word)-2;
-
-
     int palindrome = 1;
     while(h > l){
         if(word[l++] != word[h--]){
@@ -95,8 +91,6 @@ int main(int argc, char* argv[]){
             h = l;
         }
     }
-
-    //cout << palindrome <<endl;
 
     
 
@@ -108,6 +102,7 @@ int main(int argc, char* argv[]){
 
     messageKey = ftok("poggies", 65);
 
+    //Change values of message queue to send 
     msgid = msgget(messageKey, 0666 | IPC_CREAT);
     message.mesg_type = 1;
     message.mesg_index = index;
@@ -121,14 +116,13 @@ int main(int argc, char* argv[]){
     else 
         return 0;
 
+
     msgsnd(msgid, &message, sizeof(message), 0);
 
-    //printf("Data send is : %s \n", message.mesg_text);
 
     
     shmdt((void *) mylist);
 
-    //cout << "Ending child process" <<endl;
     return 0;
 
 
