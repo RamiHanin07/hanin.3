@@ -118,9 +118,6 @@ int main(int argc, char* argv[]){
 
 
     msgsnd(msgid, &message, sizeof(message), 0);
-
-
-    
     shmdt((void *) mylist);
 
     return 0;

@@ -50,8 +50,8 @@ int main(int argc, char* argv[]){
     int t = time(NULL);
     string argNext = "";
     int count = 5;
-    int maxProcesses;
-    int maxAllowed;
+    int maxProcesses = -1;
+    int maxAllowed = 20;
     signal(SIGINT, signalHandler);
     signal(SIGALRM, signalHandler);
     alarm(25);
@@ -79,6 +79,8 @@ int main(int argc, char* argv[]){
             cout << "-m " << argNext << endl;
             stringstream m(argNext);
             m >> maxAllowed;
+            pid_t *childProcesses;
+            childProcesses = new pid_t[maxAllowed];
             if(maxAllowed > 20){
                 cout << "Error: -m can only accept up to 20 max number of children allowed" <<endl;
                 return 0;
@@ -86,7 +88,10 @@ int main(int argc, char* argv[]){
         }
     }
 
+    pid_t *childProcesses;
+    childProcesses = new pid_t[maxAllowed];
 
+    
     //Create shared memory
     int sizeMem = 1024;
     key_t key = 800813;
@@ -109,6 +114,11 @@ int main(int argc, char* argv[]){
     while(getline(file,input)){
         fileLength++;
     }
+
+    if(maxProcesses == -1){
+        maxProcesses = fileLength;
+    }
+
     
     file.clear();
     file.seekg(0,ios::beg);
@@ -138,16 +148,9 @@ int main(int argc, char* argv[]){
     char buffer[50];
     pid_t child_pid, wpid;
     int status = 0;
-    for(int i = 0; i < fileLength; i++){
-        sprintf(buffer, "%d", i);
-        if(child_pid = fork() == 0)
-            execl("./palin", buffer);
-    }
+    if(maxProcesses < fileLength)
+        fileLength = maxProcesses;
 
-    
-
-    
-    //Receive message queue
     key_t messageKey = ftok("poggies", 65);
     int msgid;
 
@@ -156,44 +159,56 @@ int main(int argc, char* argv[]){
     ofstream palin("palin.out");
     ofstream noPalin("nopalin.out");
 
+
+    for(int i = 0; i < fileLength; i++){
+        sprintf(buffer, "%d", i);
+        if(sizeof(childProcesses)/sizeof(childProcesses[0]) < 5){
+            if(childProcesses[i] = fork() == 0)
+                execl("./palin", buffer);
+        }
+        else{
+            i--;
+        }
+
+        while((wpid = wait(&status)) > 0){
+        msgrcv(msgid, &message, sizeof(message), 1, 0);
+        if(strcmp(message.mesg_text, "Palindrome") == 0){
+            cout << "Palindrome received;" << endl;
+            cout << "Index: " << message.mesg_index << endl;
+            cout << "Process ID: " << message.mesg_pid <<endl;
+            cout << "String: " << message.mesg_string <<endl;
+            palin << message.mesg_pid << "  " << message.mesg_index << "    " << message.mesg_string;
+            cout <<  endl;
+        }
+
+        else if(strcmp(message.mesg_text, "Not Palindrome") == 0){
+            cout << "Not Palindrome" << endl;
+            cout << "Index: " << message.mesg_index << endl;
+            cout << "Process ID: " << message.mesg_pid <<endl;
+            cout << "String: " << message.mesg_string <<endl;
+            noPalin << message.mesg_pid << "  " << message.mesg_index << "    " << message.mesg_string;
+            cout <<  endl;
+        }
+        else
+            cout << "unable to discern message" <<endl;
+        }
+
+    }
+
+    
+
+    
+    //Receive message queue
+    
     //Check if message from child is Palindrome or Not Palindrome
     //Then output to files
-    while((wpid = wait(&status)) > 0){
-    msgrcv(msgid, &message, sizeof(message), 1, 0);
-    if(strcmp(message.mesg_text, "Palindrome") == 0){
-        cout << "Palindrome received;" << endl;
-        cout << "Index: " << message.mesg_index << endl;
-        cout << "Process ID: " << message.mesg_pid <<endl;
-        cout << "String: " << message.mesg_string <<endl;
-        palin << message.mesg_pid << "  " << message.mesg_index << "    " << message.mesg_string;
-        cout <<  endl;
-
-    }
-    else if(strcmp(message.mesg_text, "Not Palindrome") == 0){
-        cout << "Not Palindrome" << endl;
-        cout << "Index: " << message.mesg_index << endl;
-        cout << "Process ID: " << message.mesg_pid <<endl;
-        cout << "String: " << message.mesg_string <<endl;
-        noPalin << message.mesg_pid << "  " << message.mesg_index << "    " << message.mesg_string;
-        cout <<  endl;
-    }
-    else
-        cout << "unable to discern message" <<endl;
+    
 
     //printf("Data Received is : %s \n", message.mesg_text);
-
-    }
-
-
 
     //Close Message queue, void array, exit.
     msgctl(msgid, IPC_RMID, NULL);
     shmdt((void *) mylist);
     cout << "Complete" <<endl;
-
-   
-
-
-
-
+    return 1;
 }

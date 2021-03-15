@@ -1,7 +1,7 @@
 CC=g++
-CFLAGS= -o
+CFLAGS= -o 
 
-main: Coordinator.cpp
+main: Coordinator.cpp palin
 	$(CC) $(CFLAGS) Coordinator Coordinator.cpp
 
 palin : palin.cpp
